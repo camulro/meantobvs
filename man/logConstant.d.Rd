@@ -25,6 +25,7 @@ factor.
 This prior is derived by assigning an independent Bernouilli distribution with fixed
 probability 0.5 to the a priori inclusion probability of each competing
 dummy variable and assumming independence between different factors.
+Ignores the factors that are not active
 }
 \examples{
 tau <- c(FALSE, TRUE, TRUE)
@@ -33,8 +34,8 @@ logConstant.d(tau = tau, l = levels)
 
 }
 \seealso{
-\code{\link[MissingBVS]{missingGibbsBVS.lm}},
-\code{\link[MissingBVS]{logScottBerger.d}}.
+\code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+\code{\link[meantobvs]{logScottBerger.d}}.
 }
 \author{
 Carolina Mulet

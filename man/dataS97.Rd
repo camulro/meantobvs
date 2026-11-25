@@ -99,7 +99,7 @@ regressors there are both numerical covariates and factors.
 }
 \details{
 It was firstly used in Sala-i-Martin (1997) and later analized by Fernández,
-Ley and Steel (2001) through a BVS perspective deleting missing obeservations.
+Ley and Steel (2001) through a bvs perspective deleting missing obeservations.
 Taken from the Journal of Data Archive - Journal of Applied Econometrics.
 }
 \examples{

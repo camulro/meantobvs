@@ -13,8 +13,8 @@ BF.BIC.glm.fit(
   k = ncol(X) - 1,
   weights = rep(1, n),
   offset = rep(0, n),
-  fitstart = NULL,
-  control = glm.control()
+  control = glm2fastglm.control(),
+  fitstart = NULL
 )
 }
 \arguments{
@@ -39,11 +39,11 @@ specify the weights to be used in the glm fitting process.}
 \item{offset}{NULL or a numeric vector of the same length as \code{y} to
 specify an a priori known component included in the glm fitting process.}
 
+\item{control}{List of parameters for controlling the
+\code{\link[fastglm]{fastglm}} fitting process.}
+
 \item{fitstart}{Optional starting values for the parameters in the linear
 predictor. By default, it is \code{NULL}.}
-
-\item{control}{List of parameters for controlling the glm fitting process.
-It is set to \code{[stats]{glm.control()}} by default.}
 }
 \value{
 \code{BF.BIC.glm.fit} returns, in logarithmic scale, the BIC
@@ -56,21 +56,14 @@ complete data in generalized linear models.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-# Build a small reproducible binary-response example from airquality.
-data("airquality")
-glm_data <- airquality[complete.cases(airquality[, c("Ozone", "Wind",
-  "Temp", "Solar.R")]), c("Ozone", "Wind", "Temp", "Solar.R")]
-glm_data$Outcome <- as.integer(glm_data$Ozone > median(glm_data$Ozone))
-glm_data <- glm_data[, c("Outcome", "Wind", "Temp", "Solar.R")]
+#Indian Prime Diabetes Data
 
-Xdiab <- glm_data[, c("Wind", "Temp", "Solar.R")]
-Xdiab$Wind[c(1, 10)] <- NA_real_
-f <- Outcome ~ Wind + Temp + Solar.R
-imp1 <- mice.imputation(X = Xdiab, formula = f, n.imp = 1,
-                        seed = 1, parallel = FALSE)
+f <- Outcome ~ Pregnancies + Glucose + BloodPressure + SkinThickness + Insulin
+imp1 <- mice.imputation(model.frame(f, diabetes, na.action = NULL),
+n.imp = 1, seed = 1)$imputation.array[,,1]
 
-glmnull <- glm(Outcome ~ 1, data = glm_data, family = binomial(), y = TRUE)
-lBF <- MissingBVS:::BF.BIC.glm.fit(y = glmnull$y, X = imp1$imputation.array[,,1],
+glmnull <- glm(Outcome ~ 1, data = diabetes, family = binomial(), y = TRUE)
+lBF <- meantobvs:::BF.BIC.glm.fit(y = glmnull$y, X = imp1,
   family = binomial(), devnull = glmnull$deviance)
 \dontshow{\}) # examplesIf}
 }
@@ -79,8 +72,8 @@ Schwarz, G. (1978) Estimating the dimension of a model. The
 Annals of Statistics. 6(2): 461–464.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.glm}} for
+Use \code{\link[meantobvs]{lBF.av.glm.fit}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.glm}} for
 an exact computation of the model posterior distribution in the VS problem
 (recommended when p<20).
 }

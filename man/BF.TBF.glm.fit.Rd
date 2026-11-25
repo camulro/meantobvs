@@ -13,8 +13,8 @@ BF.TBF.glm.fit(
   lTBF.method,
   weights = rep(1, length(y)),
   offset = rep(0, length(y)),
-  fitstart = NULL,
-  control = glm.control()
+  control = glm2fastglm.control(),
+  fitstart = NULL
 )
 }
 \arguments{
@@ -39,11 +39,11 @@ specify the weights to be used in the glm fitting process.}
 \item{offset}{NULL or a numeric vector of the same length as \code{y} to
 specify an a priori known component included in the glm fitting process.}
 
+\item{control}{List of parameters for controlling the
+\code{\link[fastglm]{fastglm}} fitting process.}
+
 \item{fitstart}{Optional starting values for the parameters in the linear
 predictor. By default, it is \code{NULL}.}
-
-\item{control}{List of parameters for controlling the glm fitting process.
-It is set to \code{[stats]{glm.control()}} by default.}
 }
 \value{
 \code{BF.TBF.glm.fit} returns, in logarithmic scale, the TBF
@@ -56,22 +56,16 @@ complete data in generalized linear models.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-# Build a small reproducible binary-response example from airquality.
-data("airquality")
-glm_data <- airquality[complete.cases(airquality[, c("Ozone", "Wind",
-  "Temp", "Solar.R")]), c("Ozone", "Wind", "Temp", "Solar.R")]
-glm_data$Outcome <- as.integer(glm_data$Ozone > median(glm_data$Ozone))
-glm_data <- glm_data[, c("Outcome", "Wind", "Temp", "Solar.R")]
+#Indian Prime Diabetes Data
 
-Xdiab <- glm_data[, c("Wind", "Temp", "Solar.R")]
-Xdiab$Wind[c(1, 10)] <- NA_real_
-f <- Outcome ~ Wind + Temp + Solar.R
-imp1 <- mice.imputation(X = Xdiab, formula = f, n.imp = 1,
-                        seed = 1, parallel = FALSE)
+f <- Outcome ~ Pregnancies + Glucose + BloodPressure + SkinThickness + Insulin
+imp1 <- mice.imputation(model.frame(f, diabetes, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array[,,1]
 
-glmnull <- glm(Outcome ~ 1, data = glm_data, family = binomial(), y = TRUE)
-lTBF.method <- function (k, dev) MissingBVS:::lTBF.gfixed(g = length(glmnull$y), k, dev, devnull = 0)
-lBF <- MissingBVS:::BF.TBF.glm.fit(y = glmnull$y, X = imp1$imputation.array[,,1],
+glmnull <- glm(Outcome ~ 1, data = diabetes, family = binomial(), y = TRUE)
+lTBF.method <- lTBF.glm.function("gZellner",
+  length(glmnull$y), ncol(imp1), glmnull$deviance)
+lBF <- meantobvs:::BF.TBF.glm.fit(y = glmnull$y, X = imp1,
   family = binomial(), lTBF.method = lTBF.method)
 \dontshow{\}) # examplesIf}
 }
@@ -81,8 +75,8 @@ Held, L., Sabanés Bové, D. and Gravestock, I.
 Deviance Statistic. Statistical Science, 30(2): 242–257.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.glm}} for
+Use \code{\link[meantobvs]{lBF.av.glm.fit}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.glm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

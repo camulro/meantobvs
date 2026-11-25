@@ -2,7 +2,7 @@
 % Please edit documentation in R/aux_fun_imputation.R
 \name{MC.imputation}
 \alias{MC.imputation}
-\title{\pkg{MissingBVS}'s objective Bayesian imputation for multivariate normal covariates}
+\title{\pkg{meantobvs}'s objective Bayesian imputation for multivariate normal covariates}
 \usage{
 MC.imputation(
   X,
@@ -27,7 +27,7 @@ initial values. By default, it is set to "norm" since \code{X} has to be normal.
 \code{nMC = 30} or not.}
 }
 \value{
-\code{MC.imputation} returns an object of class \code{MissingBVS.imputation}
+\code{MC.imputation} returns an object of class \code{meantobvs.imputation}
 with the following elements:
 \item{rX.imput}{Array of dimension nxpx\code{nMC}, where n is the number of
 observations and p the number of competing covariates, containing the imputed datasets}
@@ -63,9 +63,9 @@ van Buuren, S. and Groothuis-Oudshoorn, K. (2011) mice: Multivariate Imputation
 by Chained Equations in R. Journal of Statistical Software. 45(3): 1–67.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.miss}} for computing the logarithm
+Use \code{\link[meantobvs]{lBF.miss}} for computing the logarithm
 of the MC approximation of the Bayes factor in linear models.
-Use \code{\link[MissingBVS]{missingBVS.lm}} for an exact computation
+Use \code{\link[meantobvs]{bvs.lm}} for an exact computation
 of the model posterior distribution in the VS problem (recommended when p<20).
 }
 \author{

@@ -2,6 +2,6 @@
 # https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(MissingBVS)
+library(meantobvs)
 
-test_check("MissingBVS")
+test_check("meantobvs")

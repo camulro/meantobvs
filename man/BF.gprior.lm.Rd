@@ -24,14 +24,14 @@ the fixed terms and the intercept.}
 
 \item{prior.betas}{Prior distribution for model-specific coefficients in the
 \pkg{BayesVarSel} codification. Options include "gBF", "RobustBF", "LiangBF",
-"ZSBF", "flsBF", "intrinsicBF" and "geointrinsicBF". See
-\code{\link[MissingBVS]{missingBVS.lm}} for more details.}
+"ZSBF", intrinsicBF" and "geointrinsicBF". See
+\code{\link[meantobvs]{bvs.lm}} for more details.}
 
-\item{n}{Number of observations.}
+\item{n}{Integer, number of observations.}
 
-\item{k}{Number of model-specific coefficients.}
+\item{k}{Integer, number of model-specific coefficients.}
 
-\item{p0}{Number of fixed covariates (including the intercept).}
+\item{p0}{Integer, number of fixed covariates (including the intercept).}
 }
 \value{
 \code{BF.gprior.lm} returns, in logarithmic scale, the exact
@@ -45,13 +45,13 @@ for complete data in linear models.
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
-data("dataS97")
-XS97 = dataS97[,c("lifee060", "gdpsh60l", "p60")]
+
 f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
-imp1 <- mice.imputation(X = XS97, formula = f, n.imp = 1)
+imp1 <- mice.imputation(model.frame(f, dataS97, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array
 
 lmnull <- lm(gr56092 ~ 1, data = dataS97, y = T)
-lBF <- MissingBVS:::BF.gprior.lm(y = lmnull$y, X = imp1$imputation.array[-lmnull$na.action,,],
+lBF <- meantobvs:::BF.gprior.lm(y = lmnull$y, X = imp1[-lmnull$na.action,,],
   SS0 = crossprod(lmnull$residuals))
 \dontshow{\}) # examplesIf}
 }
@@ -89,8 +89,8 @@ Inference and Decision techniques: Essays in Honor of Bruno de Finetti (A.
 Zellner, ed.) 389-399. Edward Elgar Publishing Limited.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.lm}} for
+Use \code{\link[meantobvs]{lBF.av}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.lm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

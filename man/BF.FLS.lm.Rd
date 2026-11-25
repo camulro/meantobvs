@@ -22,19 +22,19 @@ the fixed terms and the intercept.}
 
 \item{SS0}{Sum of squared error of the null model considered.}
 
-\item{dmax}{Maximum model dimension of potential regressors.}
+\item{dmax}{Integer, maximum model dimension of potential regressors.}
 
-\item{n}{Number of observations.}
+\item{n}{Integer, number of observations.}
 
-\item{k}{Number of model-specific coefficients.}
+\item{k}{Integer, number of model-specific coefficients.}
 
-\item{p0}{Number of fixed covariates (including the intercept).}
+\item{p0}{Integer, number of fixed covariates (including the intercept).}
 }
 \value{
 \code{BF.FLS.lm} returns, in logarithmic scale, the exact
 value of the Bayes factor derived from assigning the FLS Benchmark g-prior
 in linear models for a given model through \code{X}. See
-\code{\link[MissingBVS]{missingBVS.lm}} for more details.
+\code{\link[meantobvs]{bvs.lm}} for more details.
 }
 \description{
 Computes the logarithm of the Bayes factors derived from the
@@ -43,14 +43,14 @@ Fernandez, Ley and Steel (2001) Benchmark prior for complete data in linear mode
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
-data("dataS97")
-XS97 = dataS97[,c("lifee060", "gdpsh60l", "p60")]
+
 f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
-imp1 <- mice.imputation(X = XS97, formula = f, n.imp = 1)
+imp1 <- mice.imputation(model.frame(f, dataS97, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array
 
 lmnull <- lm(gr56092 ~ 1, data = dataS97, y = T)
-lBF <- MissingBVS:::BF.FLS.lm(y = lmnull$y, X = imp1$imputation.array[-lmnull$na.action,,],
-  SS0 = crossprod(lmnull$residuals), dmax = ncol(XS97))
+lBF <- meantobvs:::BF.FLS.lm(y = lmnull$y, X = imp1[-lmnull$na.action,,],
+  SS0 = crossprod(lmnull$residuals), dmax = ncol(imp1))
 \dontshow{\}) # examplesIf}
 }
 \references{
@@ -63,8 +63,8 @@ Fernandez, C., Ley, E. and Steel, M.F.J.
 model averaging. Journal of Econometrics, 100, 381-427.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.lm}} for
+Use \code{\link[meantobvs]{lBF.av}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.lm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

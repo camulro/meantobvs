@@ -8,7 +8,7 @@ BF.gprior.glm(
   y,
   X,
   family = binomial(link = "logit"),
-  prior.betas = BAS::robust(as.numeric(length(y))),
+  prior.betas = BAS::g.prior(length(y)),
   logmargnull,
   k = ncol(X) - p0,
   p0 = 1L,
@@ -69,22 +69,15 @@ for complete data in generalized linear models.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
-# Build a small reproducible binary-response example from airquality.
-data("airquality")
-glm_data <- airquality[complete.cases(airquality[, c("Ozone", "Wind",
-  "Temp", "Solar.R")]), c("Ozone", "Wind", "Temp", "Solar.R")]
-glm_data$Outcome <- as.integer(glm_data$Ozone > median(glm_data$Ozone))
-glm_data <- glm_data[, c("Outcome", "Wind", "Temp", "Solar.R")]
+#Indian Prime Diabetes Data
 
-Xdiab <- glm_data[, c("Wind", "Temp", "Solar.R")]
-Xdiab$Wind[c(1, 10)] <- NA_real_
-f <- Outcome ~ Wind + Temp + Solar.R
-imp1 <- mice.imputation(X = Xdiab, formula = f, n.imp = 1,
-                        seed = 1, parallel = FALSE)
+f <- Outcome ~ Pregnancies + Glucose + BloodPressure + SkinThickness + Insulin
+imp1 <- mice.imputation(model.frame(f, diabetes, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array[,,1]
 
-glmnull <- glm(Outcome ~ 1, data = glm_data, family = binomial(), y = TRUE)
-lBF <- MissingBVS:::BF.gprior.glm(y = glmnull$y, X = imp1$imputation.array[,,1],
-  family = binomial(), logmargnull = 0) #returns the logmarginal
+glmnull <- glm(Outcome ~ 1, data = diabetes, family = binomial(), y = TRUE)
+lBF <- meantobvs:::BF.gprior.glm(y = glmnull$y, X = imp1,
+  family = binomial(), logmargnull = logmargnull.glm(glmnull))
 \dontshow{\}) # examplesIf}
 }
 \references{
@@ -97,8 +90,8 @@ g-priors in Generalized Linear Models. Journal of the American Statistical
 Association. 113: 1828-1845
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.glm}} for
+Use \code{\link[meantobvs]{lBF.av}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.glm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

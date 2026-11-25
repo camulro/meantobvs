@@ -5,6 +5,8 @@
 #' @keywords internal
 buildmatrices <- function(formula, null.model, data, marginal.factors) {
 
+  matrices <- list()
+
   ##Null model (fixed vars, including the intercept term)
   #for imputation:
   framenull <- model.frame(null.model, data = data, na.action = NULL)
@@ -12,17 +14,22 @@ buildmatrices <- function(formula, null.model, data, marginal.factors) {
   X0rdf <- X0 <- model.matrix(framenull, data)
   namesnull <- colnames(X0)
 
-  q0 <- ncol(framenull) #covariate-factor level
-  p0 <- ncol(X0) #covariate-dummy level
+  matrices$q0 <- ncol(framenull) #covariate-factor level
+  matrices$p0 <- ncol(X0) #covariate-dummy level
 
   ##Full model
   framefull <- model.frame(formula, data = data, na.action = NULL)
 
+  matrices$X0 <- X0
+  matrices$namesnull <- namesnull
+  matrices$framenull <- framenull
+  matrices$framefull <- framefull
+
   ##Factors' treatment: rank deficient decomposition
   if (marginal.factors) {
 
-    X0rdf <- model.matrix.rankdef(framenull) #to remove vars from full
-    X.full <- model.matrix.rankdef(framefull) #rank defficient full design
+    X0rdf <- model.rankdef.matrix(framenull) #to remove vars from full
+    X.full <- model.rankdef.matrix(framefull) #rank defficient full design
 
     namesx <- colnames(X.full)
     namesxnotnull <- setdiff(namesx, colnames(X0rdf)) #non-fixed var names
@@ -34,35 +41,32 @@ buildmatrices <- function(formula, null.model, data, marginal.factors) {
     namesxnotnull <- setdiff(namesx, namesnull)
   }
   #Full design matrix without fixed vars
-  X.full <- X.full[, namesxnotnull, drop = FALSE]
+  matrices$X.full <- X.full[, namesxnotnull, drop = FALSE]
   p <- length(namesxnotnull) #covariate-dummy level
 
-  ordvars <- c(namesnull, namesxnotnull) #[X0, X.full]
+  #Is there any variable to select from?
+  if (p == 0) stop("The number of fixed variables is equal to the number of\n",
+                   "regressors in the full model. No model selection can be done.\n")
+
+  matrices$ordvars <- c(namesnull, namesxnotnull) #[X0, X.full]
+  matrices$namesxnotnull <- namesxnotnull
+  matrices$namesx <- namesx
+  matrices$p <- p
 
   if (!marginal.factors) { #If no factors' treatment
+    matrices$q <- p
+    matrices$depvars <- namesxnotnull
+    matrices$L <- 0L
 
-    return(list(
-      q0 = p0,
-      p0 = p0,
-      X0 = X0,
-      namesnull = namesnull,
-      framenull = framenull,
-      q = p,
-      p = p,
-      X.full = X.full,
-      namesxnotnull = namesxnotnull,
-      namesx = namesx,
-      framefull = framefull,
-      ordvars = ordvars,
-      depvars = namesxnotnull,
-      L = 0
-    ))
+    return(matrices)
   }
 
   ##Get covariates and factors to select from if needed
   #Info from framefull to get factors and dummy names:
   depvars <- setdiff(attr(terms(framefull), "term.labels"),
                      attr(terms(framenull), "term.labels"))
+
+  matrices$depvars <- depvars
 
   factorsfull <- attr(terms(framefull), "factors")
   classesfull <- attr(terms(framefull), "dataClasses")
@@ -107,10 +111,15 @@ buildmatrices <- function(formula, null.model, data, marginal.factors) {
   colnames(positions) <- namesxnotnull
 
   #Identify factors
-  tmp <- colSums(positions %*% t(positions))
+  ifelse(dim(positions)[2] > 1,
+         tmp <- colSums(positions %*% t(positions)),
+         tmp <- positions)
 
   positionsx <- tmp == 1 #TRUE if numeric covariate
   L <- sum(!positionsx) #Number of factors to select from
+
+  matrices$positions <- positions
+  matrices$positionsx <- positionsx
 
   ##Factor information needed for model prior and posterior computation
   if (L > 0) {
@@ -122,57 +131,36 @@ buildmatrices <- function(formula, null.model, data, marginal.factors) {
 
     #save position of the first dummy in each factor
     #used on pool estimation step to get representant over repeated models
-    indf <- apply(positionsfac, 1,
+    matrices$indf <- apply(positionsfac, 1,
       function(x) which(x == 1)[1]
     )
 
     #save hash for representant over saturated models
-    satmodels.repr <- sapply(seq_len(L),
+    matrices$satmodels.repr <- sapply(seq_len(L),
       function(j) {
         fac <- positionsfac[j, ]
-        fac[indf[j]] <- 0
+        fac[matrices$indf[j]] <- 0
         digest::digest(fac)
       }
     )
 
-    q <- p - sum(l) + L #Total number of factors and covariates
+    matrices$q <- p - sum(l) + L #Total number of factors and covariates
 
   } else { #if there are no factors
 
     positionsfac <- NULL
     l <- integer(0)
-    indf <- integer(0)
-    satmodels.repr <- character(0)
+    matrices$indf <- integer(0)
+    matrices$satmodels.repr <- character(0)
 
-    q <- p
+    matrices$q <- p
   }
 
-  #return:
-  list(
-    q0 = q0,
-    p0 = p0,
-    X0 = X0,
-    namesnull = namesnull,
-    framenull = framenull,
+  matrices$positionsfac <- positionsfac
+  matrices$L <- L
+  matrices$l <- l
 
-    q = q,
-    p = p,
-    X.full = X.full,
-    namesxnotnull = namesxnotnull,
-    namesx = namesx,
-
-    framefull = framefull,
-    ordvars = ordvars,
-    depvars = depvars,
-
-    positions = positions,
-    positionsx = positionsx,
-    positionsfac = positionsfac,
-    L = L,
-    l = l,
-    indf = indf,
-    satmodels.repr = satmodels.repr
-  )
+  return(matrices)
 }
 
 #' Builds the matrix for the whole model space and adds an aditional column
@@ -189,10 +177,22 @@ buildmodelsmatrix <- function(q) {
   cbind(t(tmodels.mat), zeros)
 }
 
+#' Builds models matrix when factors for each model with an active factor in
+#' Btest functions.
+#'
+#' @keywords internal
+build_ind <- function(k) {
+  ind <- t(sapply(2:2^k - 1,
+                  FUN = function(j) num2bin.model(j, k, NULL)["bin",]))
+
+  rs <- rowSums(ind)
+  ind[!(rs == k | (rs == (k - 1) & ind[, 1])), , drop = FALSE]
+}
+
 #' Original code from package 2.6.0 \pkg{BayesVarSel} (distributed under GPL-2),
 #' by Gonzalo García-Donato and Anabel Forte.
 #'
-#' Adapted by Carolina Mulet to fit \pkg{MissingBVS}'s code and return a matrix
+#' Adapted by Carolina Mulet to fit \pkg{meantobvs}'s code and return a matrix
 #' with the binary expression of a model and the active variables with NA
 #' to reduce computational burden
 #'
@@ -224,11 +224,11 @@ num2bin.model <- function(x, p, NAvars) {
 #' Original code from package 3.1-0 \pkg{lmerTest} (distributed under GPL-2, GPL-3),
 #' by Alexandra Kuznetsova, Per Bruun Brockhoff and Rune Haubo Bojesen Christensen.
 #'
-#' Adapted by Carolina Mulet to fit \pkg{MissingBVS}'s code and obtain just
+#' Adapted by Carolina Mulet to fit \pkg{meantobvs}'s code and obtain just
 #' rank defficient matrices.
 #'
 #' @keywords internal
-model.matrix.rankdef <- function (model.frame.aux) {
+model.rankdef.matrix <- function (model.frame.aux) {
   #internal function to create rank defficient matrices from a given dataframe
   #created from a model.frame call
 
@@ -274,6 +274,328 @@ logsumexp.stable <- function (x) {
   return(logsum)
 }
 
+#' Choose corresponding needed functions for a given glm family to compute BFs.
+#'
+#' @keywords internal
+addfamilyfun <- function (family) {
+
+  fam <- family$family
+  link <- family$link
+
+  switch(fam,
+
+         gaussian = {
+           V1 <- function (mu) 0 #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = { #canonical
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   log = {
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   inverse = {
+                     mu2 <- function(eta) 2 / (eta^3) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         binomial = {
+           V1 <- function (mu) 1 - 2 * mu #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   logit = { #canonical
+                     mu2 <- function(eta) {
+                       p <- plogis(eta)
+                       p * (1 - p) * (1 - 2*p) #d2 mu/d eta2
+                     }
+                   },
+
+                   probit = {
+                     mu2 <- function(eta) - eta * dnorm(eta) #d2 mu/d eta2
+                   },
+
+                   cloglog = {
+                     mu2 <- function(eta) family$mu.eta(eta) * (1 - exp(eta)) #d2 mu/d eta2
+                   },
+
+                   cauchit = {
+                     mu2 <- function(eta) -2/pi * eta/sqrt(1 + eta^2) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         poisson = {
+           V1 <- function (mu) 1 #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   log = { #canonical
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   sqrt = {
+                     mu2 <- function(eta) 2 #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         Gamma = {
+           V1 <- function (mu) 2 * mu #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   log = {
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   inverse = { #canonical
+                     mu2 <- function(eta) 2 / (eta^3) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         inverse.gaussian = {
+           V1 <- function (mu) 3 * mu^2 #d V(mu)/d mu
+
+           switch (link,
+
+                   `1/mu^2` = { #canonical
+                     mu2 <- function(eta) 3/4 / (eta^(5/2)) #d2 mu/d eta2
+                   },
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   log = {
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   inverse = {
+                     mu2 <- function(eta) 2 / (eta^3) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         quasi = {#currently no available
+
+           switch(fam$varfun,
+
+                  constant = {
+                    V1 <- function (mu) 0 #d V(mu)/d mu
+                  },
+
+                  `mu(1-mu)` = {
+                    V1 <- function (mu) 1 - 2 * mu #d V(mu)/d mu
+                  },
+
+                  mu = {
+                    V1 <- function (mu) 1 #d V(mu)/d mu
+                  },
+
+                  `mu^2` = {
+                    V1 <- function (mu) 2 * mu #d V(mu)/d mu
+                  },
+
+                  `mu^3` = {
+                    V1 <- function (mu) 3 * mu^2 #d V(mu)/d mu
+                  },
+
+                  stop(paste0("Variance function non-recognised. ",
+                              "It must be one of: constant, mu(1-mu), mu, `mu^2` and `mu^3`.\n"))
+            )
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   logit = {
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   probit = {
+                     mu2 <- function(eta) - eta * dnorm(eta) #d2 mu/d eta2
+                   },
+
+                   cloglog = {
+                     mu2 <- function(eta) family$mu.eta(eta) * (1 - exp(eta)) #d2 mu/d eta2
+                   },
+
+                   cauchit = {
+                     mu2 <- function(eta) -2/pi * eta/sqrt(1 + eta^2) #d2 mu/d eta2
+                   },
+
+                   inverse = {
+                     mu2 <- function(eta) 2 / (eta^3) #d2 mu/d eta2
+                   },
+
+                   sqrt = {
+                     mu2 <- function(eta) 2 #d2 mu/d eta2
+                   },
+
+                   `1/mu^2` = {
+                     mu2 <- function(eta) 3/4 / (eta^(5/2)) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         quasibinomial = {
+           V1 <- function (mu) 1 - 2 * mu #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   logit = { #canonical
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   probit = {
+                     mu2 <- function(eta) - eta * dnorm(eta) #d2 mu/d eta2
+                   },
+
+                   cloglog = {
+                     mu2 <- function(eta) family$mu.eta(eta) * (1 - exp(eta)) #d2 mu/d eta2
+                   },
+
+                   cauchit = {
+                     mu2 <- function(eta) -2/pi * eta/sqrt(1 + eta^2) #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         quasipoisson = {
+           V1 <- function (mu) 1 #d V(mu)/d mu
+
+           switch (link,
+
+                   identity = {
+                     mu2 <- function(eta) 0 #d2 mu/d eta2
+                   },
+
+                   log = { #canonical
+                     mu2 <- function(eta) family$mu.eta(eta) #d2 mu/d eta2
+                   },
+
+                   sqrt = {
+                     mu2 <- function(eta) 2 #d2 mu/d eta2
+                   },
+
+                   stop(paste0("link ", link, " non-recognized for the ", fam, " family.\n"))
+           )
+
+         },
+
+         stop(paste0(" family ", fam, " non-recognized.\n"))
+  )
+
+  #if dispersion fixed, get it; otherwise compute the Pearson estimation
+  family$dispersionfun <- ifelse(
+    is.na(family$dispersion),
+    function (df.residual, weights, residuals) {
+      if (df.residual > 0)
+        sum((weights * residuals^2)[weights > 0])/df.residual
+      else NA_real_},
+    function (...) family$dispersion)
+
+  #Add functions to the family object
+  family$mu2 <- mu2 #second derivative of the inverse-link function with respect to eta
+  family$V1 <- V1 #derivative of the variance function with respect to mu
+
+  family
+}
+
+#' Compute observed Fisher information for a fitted glm object.
+#'
+#' @keywords internal
+Fobs.info <- function (glmfit, family = addfamilyfun(glmfit$family)) {
+
+  #glm fitted objects
+  eta <- glmfit$linear.predictors #the linear fit on link scale
+  mu <- glmfit$fitted.values
+  res <- glmfit$y - mu
+
+  #derivatives of the inverse-link function with respect to the linear predictor
+  mu1 <- family$mu.eta(eta)
+  mu2 <- family$mu2(eta)
+
+  #variance as a function of the mean
+  V <- family$variance(mu)
+  V1 <- family$V1(mu) #derivative
+
+  #estimated or fixed dispersion parameter
+  dispersion <- family$dispersionfun(glmfit$df.residual, glmfit$weights, res / mu1)
+
+  #Observed Fisher information:
+  d <- glmfit$prior.weights / dispersion *
+    (mu1^2 / V - res * mu2 / V + res * mu1^2 * V1 / V^2)
+
+  return(d)
+}
+
+#' Obtain list of parameters for controlling the fitting process on fastglm
+#' from a list control in glm.control() format. By default, method selected is
+#' LLT Cholesky decomposition, faster.
+#'
+#' @keywords internal
+glm2fastglm.control <- function (control = glm.control(), method = 2L) {
+
+  tol <- control$epsilon
+  maxit <- control$maxit
+
+  fastglm::fastglm_control(fastmethod = method, tol, maxit)
+
+}
+
+#' Returns a string with the family and link function on a family object
+#'
+#' @keywords internal
+family.link <- function(family) {
+  paste(family$family, family$link, sep = "/")
+}
+
 #' Get computational time from an starting event
 #'
 #' @keywords internal
@@ -287,21 +609,29 @@ get.time <- function (start.time) {
 #' Show computational time
 #'
 #' @keywords internal
-format_time <- function(x) {
-  if (is.na(x)) return("--:--:--")
+format.time <- function(x) {
+  if (!is.finite(x) || x < 0) return("--:--:--")
 
-  x <- round(x)
-  h <- x %/% 3600
-  m <- (x %% 3600) %/% 60
-  s <- x %% 60
+  x <- floor(x)
 
-  sprintf("%02d:%02d:%02d", h, m, s)
+  # h <- x %/% 3600
+  # m <- (x %% 3600) %/% 60
+  # s <- x %% 60
+  h <- floor(x / 3600)
+  if (h >= 100) return("99:59:59")
+  m <- floor((x - h * 3600) / 60)
+  s <- x - h * 3600 - m * 60
+
+  if (any(is.na(c(h, m, s)))) return("--:--:--")
+
+
+  sprintf(sprintf("%02.0f:%02.0f:%02.0f", h, m, s))
 }
 
-#' Personalized progress bar. If update == FALSE, just comutes models rate.
+#' Personalized progress bar.
 #'
 #' @keywords internal
-update.progress <- function(i, total, start.time, width = 20) {
+upd.progress <- function(i, total, start.time, width = 20) {
 
   #current computation time
   elapsed <- get.time(start.time)
@@ -312,7 +642,7 @@ update.progress <- function(i, total, start.time, width = 20) {
 
   if (update) { #check whether or not to update progress bar
     #estimated remaining time
-    eta <- if (mrate > 0) (total - i) / mrate else NA
+    eta <- if (mrate > 0) (total - i) / mrate else NA_real_
     #progress percent
     percent <- i / total * 100
 
@@ -330,8 +660,8 @@ update.progress <- function(i, total, start.time, width = 20) {
         "\r\033[K[%s] %3.0f%% [Elapsed time: %s | Estim. time: %s | ≈ %.0f models/s]",
         bar,
         percent,
-        format_time(elapsed),
-        format_time(eta),
+        format.time(elapsed),
+        format.time(eta),
         mrate
       )
     )

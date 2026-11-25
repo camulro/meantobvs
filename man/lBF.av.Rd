@@ -30,20 +30,21 @@ for any type of covariates and regression model.
 }
 \details{
 The AvBF is computed by averaging over the \code{n.imp} imputed datasets given by a
-\code{MissingBVS.imputation} object, the \code{n.imp} data-driven BF for each given
+\code{meantobvs.imputation} object, the \code{n.imp} data-driven BF for each given
 imputation. These BFs are computed with the auxiliary function \code{lBF}.
 }
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
-data("dataS97")
-XS97 = dataS97[,c("lifee060", "gdpsh60l", "p60")]
+
 f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
-imp2 <- mice.imputation(X = XS97, formula = f, n.imp = 2)
+imp2 <- mice.imputation(model.frame(f, dataS97, na.action = NULL),
+  n.imp = 2, seed = 1)$imputation.array
 
 lmnull <- lm(gr56092 ~ 1, data = dataS97, y = T)
-BF.fun <- function(X, k) MissingBVS:::BF.BIC.lm(y = lmnull$y, X, SS0 = crossprod(lmnull$residuals))
-lBF <- MissingBVS:::lBF.av(1:3, imp2$imputation.array[-lmnull$na.action,,], lBF = BF.fun)
+BF.fun <- function(X, k) meantobvs:::BF.BIC.lm(y = lmnull$y,
+  X, SS0 = crossprod(lmnull$residuals))
+lBF <- meantobvs:::lBF.av(1:3, imp2[-lmnull$na.action,,], lBF = BF.fun)
 \dontshow{\}) # examplesIf}
 }
 \references{
@@ -55,10 +56,10 @@ van Buuren, S. and Groothuis-Oudshoorn, K. (2011) mice: Multivariate Imputation
 by Chained Equations in R. Journal of Statistical Software. 45(3): 1–67.
 }
 \seealso{
-Use \code{\link[MissingBVS]{mice.imputation}} for computing the
-\code{MissingBVS.imputation} object used in the average. Use
-\code{\link[MissingBVS]{missingBVS.lm}} with linear models or
-\code{\link[MissingBVS]{missingBVS.glm}} with generalized linear models for
+Use \code{\link[meantobvs]{mice.imputation}} for computing the
+\code{meantobvs.imputation} object used in the average. Use
+\code{\link[meantobvs]{bvs.lm}} with linear models or
+\code{\link[meantobvs]{bvs.glm}} with generalized linear models for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

@@ -43,8 +43,8 @@ multiplicity adjustment in the variable-selection problem. The Annals of
 Statistics. 38: 2587–2619.
 }
 \seealso{
-\code{\link[MissingBVS]{missingGibbsBVS.lm}},
-\code{\link[MissingBVS]{logScottBerger}}, \code{\link[MissingBVS]{logConstant}}
+\code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+\code{\link[meantobvs]{logScottBerger}}, \code{\link[meantobvs]{logConstant}}
 }
 \author{
 Carolina Mulet

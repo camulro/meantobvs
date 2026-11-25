@@ -27,6 +27,7 @@ of the dummies that make up each different factor.
 This prior is derived by assigning an independent Bernouilli distribution with
 probability Beta(1,1) to the a priori inclusion probability of each competing
 dummy variable and assumming independence between different factors.
+Ignores the factors that are not active.
 }
 \examples{
 delta <- c(0, 1, 2)
@@ -45,8 +46,8 @@ Variable Selection in the Presence of Factors: A Model Selection Perspective.
 Journal of the American Statistical Association. 117. 1-27.
 }
 \seealso{
-\code{\link[MissingBVS]{missingGibbsBVS.lm}},
-\code{\link[MissingBVS]{logConstant.d}}.
+\code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+\code{\link[meantobvs]{logConstant.d}}.
 }
 \author{
 Carolina Mulet

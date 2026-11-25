@@ -1,0 +1,156 @@
+\documentclass[tikz]{standalone} 
+
+\usepackage{tikz} 
+\usetikzlibrary{arrows.meta}
+%\usetikzlibrary{backgrounds}
+%\usetikzlibrary{shadows.blur}
+\usepackage{xcolor}
+\definecolor{myorange}{HTML}{FFA82E}  
+\definecolor{myorange2}{HTML}{FFBB5C} 
+\definecolor{myorange3}{HTML}{FFCE8A} 
+\definecolor{background}{HTML}{FFE1B8}
+\definecolor{gray}{HTML}{ADADAD}
+\definecolor{darkgray}{HTML}{696969}
+
+\begin{document} 
+
+\begin{tikzpicture} 
+%\fill[background!30] (-2,-3) rectangle (8,7);
+\fill[darkgray] (0.85,-0.7) rectangle (5.7,4.1);%marco
+\fill[background!30] (0.95,-0.6) rectangle (5.6,4);
+%\fill[background!30] (1,-0.6) -- (1.5,4) -- (4,4) -- (2,-0.6) -- cycle;
+
+\tikzset{ 
+    neuron3/.style={opacity=0.9, 
+                   text opacity=0,
+                   draw opacity=0,
+                   rounded corners=1pt,
+                   fill = darkgray,
+                   text = darkgray
+                   %blur shadow={ shadow blur steps=5, shadow opacity=30 }
+                   } 
+}
+
+\tikzset{ 
+    neuron2/.style={opacity=0.9, 
+                   text opacity=0,
+                   draw opacity=0,
+                   rounded corners=1pt,
+                   fill = gray,
+                   text = gray
+                   %blur shadow={ shadow blur steps=5, shadow opacity=30 }
+                   } 
+}
+
+\tikzset{ 
+    neuron/.style={opacity=0.9, 
+                   text opacity=0,
+                   draw opacity=0,
+                   rounded corners=1pt
+                   %blur shadow={ shadow blur steps=5, shadow opacity=30 }
+                   } 
+}
+%upper matrix
+%header 
+\node[neuron3, draw=background!30,text width=1.3cm, text height=0.15cm, rounded corners, text centered] (i4) at (3.5,3.46) {.}; 
+
+%col1 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i13) at (3.0,3.0) {.}; 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i12) at (3.0,2.5) {.}; 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i11) at (3.0,2.0) {.}; 
+
+%col2 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i23) at (3.5,3.0) {.}; 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i22) at (3.5,2.5) {.};
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i21) at (3.5,2.0) {.}; 
+
+%col3 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i33) at (4.0,3.0) {.}; 
+\node[neuron3, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i32) at (4.0,2.5) {.}; 
+\node[neuron3, draw=darkgray, draw opacity = 1, dash pattern=on 2pt off 2pt, fill=background!30,text=background!30,text width=0.24cm, text height=0.24cm, rounded corners, text centered] (i31) at (4.0,2.0) {.};
+
+%middle matrix
+%header 
+\node[neuron2, draw=background!30,text width=1.3cm, text height=0.15cm, rounded corners, text centered] (i4) at (3.25,3.21) {.}; 
+
+%col1 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i13) at (2.75,2.75) {.}; 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i12) at (2.75,2.25) {.}; 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i11) at (2.75,1.75) {.}; 
+
+%col2 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i23) at (3.25,2.75) {.}; 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i22) at (3.25,2.25) {.}; 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i21) at (3.25,1.75) {.};
+%col3 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i33) at (3.75,2.75) {.}; 
+\node[neuron2, draw=background!30,text width=0.25cm, text height=0.25cm, rounded corners, text centered] (i32) at (3.75,2.25) {.}; 
+\node[neuron2, draw=gray, draw opacity = 1, dash pattern=on 2pt off 2pt, fill=background!30,text=background!30,text width=0.24cm, text height=0.24cm, rounded corners, text centered] (i31) at (3.75,1.75) {.};
+
+%main matrix
+%header
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=1.3cm, text height=0.15cm,
+rounded corners, text centered] (i4) at (3,2.96) {.};
+
+%col1
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i13) at (2.5,2.5) {.};
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i12) at (2.5,2) {.};
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i11) at (2.5,1.5) {.};
+
+%col2
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i23) at (3,2.5) {.};
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i22) at (3,2) {.};
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i21) at (3,1.5) {.};
+
+%col3
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i33) at (3.5,2.5) {.};
+\node[neuron, draw=background!30,fill=myorange,text=myorange,text width=0.25cm, text height=0.25cm,
+rounded corners, text centered] (i32) at (3.5,2) {.};
+\node[neuron, draw=myorange, draw opacity = 1, dash pattern=on 2pt off 2pt, fill=background!30,text=background!30,text width=0.24cm, text height=0.24cm,
+rounded corners, text centered] (i31) at (3.5,1.5) {.};
+
+%entry arrows
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (2.3,3.7) to[out=40,in=130] (2.75,3.65);
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (2.3,3.6) to[out=20,in=120] (2.55,3.4);
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (2.2,3.55) to[out=-100,in=130] (2.3,3.2);
+
+%arrows
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (4.25,1.75) to[out=-20,in=80] (4.3,1.4);
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (4.05,1.55) to[out=0,in=110] (4.2,1.35);
+\draw[ -{Stealth[length=1.5mm,width=1.5mm]}, draw=background, dashed , line width=1pt] (3.8,1.35) to[out=-40,in=-170] (4.2,1.3);
+
+\begin{scope}[xshift=3.45cm, yshift=0.25cm,scale=0.5]
+
+\def\sigma{1} \def\mu{2}
+
+\fill[darkgray!40] plot[domain=-5:4,samples=100] (\x,{2/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))}) -- (3,0) -- (3,0) -- cycle; 
+\draw[thick,darkgray!40] plot[domain=-4.65:4,samples=200] (\x,{2/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))});
+
+\def\sigma{0.5} \def\mu{2.5}
+
+\fill[gray, opacity=0.4] plot[domain=-5:4,samples=100] (\x,{2/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))}) -- (3,0) -- (3,0) -- cycle; 
+%\draw[thick,gray, opacity=0.4] plot[domain=-5:4,samples=200] (\x,{1/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))});
+
+\def\sigma{0.3} \def\mu{3}
+
+\fill[myorange, opacity=0.4] plot[domain=-5:4,samples=100] (\x,{2/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))}) -- (3,0) -- (3,0) -- cycle; 
+%\draw[myorange!90, opacity=0.4] plot[domain=-5:4,samples=200] (\x,{1/(\sigma*sqrt(2*pi))*exp(-(\x-\mu)^2/(2*\sigma^2))});
+
+%(\x,{1/sqrt(2*pi)*exp(-(\x-\mu)^2/2)})
+
+\end{scope}
+
+\node[text=darkgray, font=\Huge\bfseries\ttfamily] at (2.65,-0.15) {meanto};
+%\node[text=darkgray, font=\Huge\bfseries\ttfamily] at (4,-0.15) {`};
+\node[text=myorange, font=\Huge\bfseries\ttfamily] at (4.7,-0.15) {bvs};
+
+\end{tikzpicture} 
+
+\end{document}

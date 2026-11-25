@@ -1,14 +1,16 @@
-Package: MissingBVS
+Package: meantobvs
 Type: Package
-Title: Variable Selection based on Bayes Factors with Missing Data
+Title: Bayesian Variable Selection in the Presence of Missing Data and/or Factors: A Unified Framework
 Version: 0.1.0
 Authors@R: c(
     person("Carolina", "Mulet", email = "carolina.mulet1@alu.uclm.es", role = c("aut", "cre")),
     person("Gonzalo", "Garcia-Donato", email = "gonzalo.garciadonato@uclm.es", role = c("aut")),
     person("María Eugenia", "Castellanos", email = "maria.castellanos@urjc.es", role = c("aut"))
   )
-Description: Objective variable selection in the presence of missing data on 
-  the design matrix for linear and generalized linear models.
+Description: A unified objective Bayesian variable selection method that incorporates
+  to the decision choice problem other sources of uncertainty, such as missing data
+  and factors. It includes hypothesis testing, model selection and model averaging 
+  for either linear and generalized linear models.
 Maintainer: Carolina Mulet <carolina.mulet1@alu.uclm.es>
 Author: Carolina Mulet [aut, cre],
     Gonzalo Garcia-Donato [aut],
@@ -17,14 +19,13 @@ Imports:
   BayesVarSel,
   BAS,
   graphics,
-  grDevices,
   mice,
   LaplacesDemon,
   Matrix,
   stats,
-  utils,
   digest,
-  withr
+  withr,
+  fastglm
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -32,4 +33,3 @@ Config/roxygen2/version: 8.1.0
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-RoxygenNote: 7.3.3

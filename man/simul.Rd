@@ -21,7 +21,7 @@ data(simulation)
 
 }
 \seealso{
-\code{\link[MissingBVS]{ampsimul}} for the amputed version by a
+\code{\link[meantobvs]{ampsimul}} for the amputed version by a
 MAR mechanism.
 }
 \keyword{datasets}

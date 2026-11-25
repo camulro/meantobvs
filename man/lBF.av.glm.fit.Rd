@@ -2,7 +2,10 @@
 % Please edit documentation in R/aux_fun_BF.R
 \name{lBF.av.glm.fit}
 \alias{lBF.av.glm.fit}
-\title{For BF.method.glm.fit functions}
+\title{For BF.method.glm.fit functions. Analogue to lBF.av but it previously computes
+glm estimated coefficients for model on the first imputation in order to give
+this value as a starting point of the IRLS algorithm -and save computation time-
+ for next iterations.}
 \usage{
 lBF.av.glm.fit(
   model,
@@ -15,6 +18,9 @@ lBF.av.glm.fit(
 )
 }
 \description{
-For BF.method.glm.fit functions
+For BF.method.glm.fit functions. Analogue to lBF.av but it previously computes
+glm estimated coefficients for model on the first imputation in order to give
+this value as a starting point of the IRLS algorithm -and save computation time-
+ for next iterations.
 }
 \keyword{internal}

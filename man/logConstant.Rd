@@ -27,8 +27,8 @@ exp(logConstant(p = 4))
 
 }
 \seealso{
-\code{\link[MissingBVS]{missingGibbsBVS.lm}},
-\code{\link[MissingBVS]{logScottBerger}}, \code{\link[MissingBVS]{logUser}}
+\code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+\code{\link[meantobvs]{logScottBerger}}, \code{\link[meantobvs]{logUser}}
 }
 \author{
 Carolina Mulet

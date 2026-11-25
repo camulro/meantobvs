@@ -31,13 +31,13 @@ complete data in linear models.
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
-data("dataS97")
-XS97 = dataS97[,c("lifee060", "gdpsh60l", "p60")]
+
 f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
-imp1 <- mice.imputation(X = XS97, formula = f, n.imp = 1)
+imp1 <- mice.imputation(model.frame(f, dataS97, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array
 
 lmnull <- lm(gr56092 ~ 1, data = dataS97, y = T)
-lBF <- MissingBVS:::BF.BIC.lm(y = lmnull$y, X = imp1$imputation.array[-lmnull$na.action,,],
+lBF <- meantobvs:::BF.BIC.lm(y = lmnull$y, X = imp1[-lmnull$na.action,,],
   SS0 = crossprod(lmnull$residuals))
 \dontshow{\}) # examplesIf}
 }
@@ -46,8 +46,8 @@ Schwarz, G. (1978) Estimating the dimension of a model. The
 Annals of Statistics. 6(2): 461–464.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.lm}} for
+Use \code{\link[meantobvs]{lBF.av}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.lm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

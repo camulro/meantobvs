@@ -49,7 +49,7 @@ number of imputations is big enough (\code{n.imp} > 120).}
 \code{n.imp = 30} or not.}
 }
 \value{
-An object of class \code{MissingBVS.imputation}, an array of dimension
+An object of class \code{meantobvs.imputation}, an array of dimension
 nxpx\code{n.imp}, where n is the number of observations and p the number of
 competing covariates given by \code{formula}, containing the imputed datasets.
 }
@@ -77,8 +77,8 @@ for a big number \code{n.imp} of imputations or huge datasets \code{X}.
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
 data("dataS97")
 
-imp.S97 <- mice.imputation(X = dataS97[, c("lifee060", "gdpsh60l", "p60")],
-                           formula = gr56092 ~ 1 + lifee060 + gdpsh60l + p60,
+f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
+imp.S97 <- mice.imputation(model.frame(formula = f, data = dataS97, na.action = NULL),
                            n.imp = 2, seed = 1, parallel = FALSE)
 
 dim(imp.S97$imputation.array)
@@ -95,9 +95,9 @@ Volker, T.B. and Vink, G. (2022). futuremice: The future starts today.
 <https://www.gerkovink.com/miceVignettes/futuremice/Vignette_futuremice.html>
 }
 \seealso{
-Use \code{\link[MissingBVS]{missingBVS.lm}} for an exact computation
+Use \code{\link[meantobvs]{bvs.lm}} for an exact computation
 of the model posterior distribution in the VS problem (recommended when p<20)
-in linear models and \code{\link[MissingBVS]{missingBVS.glm}} for generalized
+in linear models and \code{\link[meantobvs]{bvs.glm}} for generalized
 linear models.
 }
 \author{

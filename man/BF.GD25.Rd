@@ -36,7 +36,7 @@ data("airquality")
 imp1 <- MC.imputation(X = airquality[,c("Ozone", "Wind", "Temp")], nMC = 1)
 
 lmnull <- lm(Solar.R ~ 1, data = airquality, y = T)
-lBF.imp1 <- MissingBVS:::BF.GD25(imp1$rX.imput[-lmnull$na.action,,], imp1$rSigma[,,1],
+lBF.imp1 <- meantobvs:::BF.GD25(imp1$rX.imput[-lmnull$na.action,,], imp1$rSigma[,,1],
   y = lmnull$y, SS0 = crossprod(lmnull$residuals))
 \dontshow{\}) # examplesIf}
 }
@@ -46,9 +46,9 @@ and Forte, A. (2025) Model Uncertainty and Missing Data: An Objective Bayesian
 Perspective (with Discussion). Bayesian Analysis. 20: 1677–1778.
 }
 \seealso{
-Use \code{\link[MissingBVS]{MC.imputation}} for computing the
-\code{MissingBVS.imputation} object containing the \code{X.center} and \code{Sigma11}
-matrices. Use \code{\link[MissingBVS]{missingBVS.lm}} for an exact computation
+Use \code{\link[meantobvs]{MC.imputation}} for computing the
+\code{meantobvs.imputation} object containing the \code{X.center} and \code{Sigma11}
+matrices. Use \code{\link[meantobvs]{bvs.lm}} for an exact computation
 of the model posterior distribution in the VS problem (recommended when p<20).
 }
 \author{

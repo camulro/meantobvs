@@ -34,14 +34,14 @@ complete data in linear models.
 \examples{
 \dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 #Cross-Country Growth, from Fernández, Ley and Steel (2001)
-data("dataS97")
-XS97 = dataS97[,c("lifee060", "gdpsh60l", "p60")]
+
 f <- gr56092 ~ 1 + lifee060 + gdpsh60l + p60
-imp1 <- mice.imputation(X = XS97, formula = f, n.imp = 1)
+imp1 <- mice.imputation(model.frame(f, dataS97, na.action = NULL),
+  n.imp = 1, seed = 1)$imputation.array
 
 lmnull <- lm(gr56092 ~ 1, data = dataS97, y = T)
-lTBF.method <- function (k, dev) MissingBVS:::lTBF.gfixed(g = length(lmnull$y), k, dev, devnull = 0)
-lBF <- MissingBVS:::BF.TBF.lm(y = lmnull$y, X = imp1$imputation.array[-lmnull$na.action,,],
+lTBF.method <- lTBF.function("gZellner", length(lmnull$y), ncol(imp1), 0)
+lBF <- meantobvs:::BF.TBF.lm(y = lmnull$y, X = imp1[-lmnull$na.action,,],
   SS0 = crossprod(lmnull$residuals), lTBF.method = lTBF.method)
 \dontshow{\}) # examplesIf}
 }
@@ -51,8 +51,8 @@ Held, L., Sabanés Bové, D. and Gravestock, I.
 Deviance Statistic. Statistical Science, 30(2): 242–257.
 }
 \seealso{
-Use \code{\link[MissingBVS]{lBF.av}} to compute the average Bayes
-factor for missing data. Use \code{\link[MissingBVS]{missingBVS.lm}} for
+Use \code{\link[meantobvs]{lBF.av}} to compute the average Bayes
+factor for missing data. Use \code{\link[meantobvs]{bvs.lm}} for
 an exact computation of the model  posterior distribution in the VS problem
 (recommended when p<20).
 }

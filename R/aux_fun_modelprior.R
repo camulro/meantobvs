@@ -15,8 +15,8 @@
 #'
 #' @author Carolina Mulet
 #'
-#' @seealso \code{\link[MissingBVS]{missingGibbsBVS.lm}},
-#' \code{\link[MissingBVS]{logConstant}}, \code{\link[MissingBVS]{logUser}}
+#' @seealso \code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+#' \code{\link[meantobvs]{logConstant}}, \code{\link[meantobvs]{logUser}}
 #'
 #' @references Scott, J.G. and Berger, J.O. (2010) Bayes and empirical-Bayes
 #' multiplicity adjustment in the variable-selection problem. The Annals of
@@ -31,8 +31,10 @@
 #' vapply(models, logScottBerger, numeric(1), p = 4)
 #'
 logScottBerger <- function(p = length(model), model) {
+
   # log((p + 1)^(-1) / choose(p, sum(model)))
   -log(p + 1) - lchoose(p, sum(model)) #logarithmic scale
+
 }
 
 #' Logarithm of the Constant model prior
@@ -51,16 +53,18 @@ logScottBerger <- function(p = length(model), model) {
 #'
 #' @author Carolina Mulet
 #'
-#' @seealso \code{\link[MissingBVS]{missingGibbsBVS.lm}},
-#' \code{\link[MissingBVS]{logScottBerger}}, \code{\link[MissingBVS]{logUser}}
+#' @seealso \code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+#' \code{\link[meantobvs]{logScottBerger}}, \code{\link[meantobvs]{logUser}}
 #'
 #' @examples
 #' logConstant(p = 4)
 #' exp(logConstant(p = 4))
 #'
 logConstant <- function(p) {
+
   # 1 / (2^p)
   -p * log(2) #logaritmic scale
+
 }
 
 #' Logarithm of a User model prior
@@ -86,8 +90,8 @@ logConstant <- function(p) {
 #'
 #' @author Carolina Mulet
 #'
-#' @seealso \code{\link[MissingBVS]{missingGibbsBVS.lm}},
-#' \code{\link[MissingBVS]{logScottBerger}}, \code{\link[MissingBVS]{logConstant}}
+#' @seealso \code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+#' \code{\link[meantobvs]{logScottBerger}}, \code{\link[meantobvs]{logConstant}}
 #'
 #' @references Scott, J.G. and Berger, J.O. (2010) Bayes and empirical-Bayes
 #' multiplicity adjustment in the variable-selection problem. The Annals of
@@ -100,17 +104,22 @@ logConstant <- function(p) {
 #' exp(logUser(p = 4, model = model, priorprobs = priorprobs))
 #'
 logUser <- function(p = length(model), model, priorprobs) {
+
   # priorprobs[sum(model)]/sum(priorprobs) / choose(p, sum(model))
+
   log(priorprobs[sum(model) + 1]) - log(sum(priorprobs)) - lchoose(p, sum(model)) #logaritmic scale
   #prior prob for each model size divided by the number of models with that size
+
 }
 
+#' Auxiliar function for lprior.model.dummies computation returns the number of
+#' different submodels given an active factor i.e., lchoose(n, k) if k < n -1 and 0
+#' otherwise (k <= n).
+#' 1 <= k <= n with dummies active
+#'
 #' @keywords internal
-# auxiliar function for lprior.model.dummies computation returns the number of different
-# models given an active factor i.e., lchoose(n, k) if k < n -1 and 0 otherwise (k <= n)
-mylchoose <- function(n, k) {
-  ifelse(k < (n - 1), lchoose(n, k), 0)
-}
+
+mylchoose <- function(n, k) ifelse(k < (n - 1), lchoose(n, k), 0)
 
 #' Logarithm of the Scott and Berger model prior for the dummy level, if factors
 #'
@@ -121,6 +130,7 @@ mylchoose <- function(n, k) {
 #' This prior is derived by assigning an independent Bernouilli distribution with
 #' probability Beta(1,1) to the a priori inclusion probability of each competing
 #' dummy variable and assumming independence between different factors.
+#' Ignores the factors that are not active.
 #'
 #' @export
 #' @param delta Integer vector of length L specifying the number of active levels
@@ -133,8 +143,8 @@ mylchoose <- function(n, k) {
 #'
 #' @author Carolina Mulet
 #'
-#' @seealso \code{\link[MissingBVS]{missingGibbsBVS.lm}},
-#' \code{\link[MissingBVS]{logConstant.d}}.
+#' @seealso \code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+#' \code{\link[meantobvs]{logConstant.d}}.
 #'
 #' @references Scott, J.G. and Berger, J.O. (2010) Bayes and empirical-Bayes
 #' multiplicity adjustment in the variable-selection problem. The Annals of
@@ -151,12 +161,15 @@ mylchoose <- function(n, k) {
 #' logScottBerger.d(delta = delta, tau = tau, l = levels)
 #'
 logScottBerger.d <- function(delta, tau, l) {
-  if (sum(tau) == 0) { #no active factor (and hence, dummy)
-    return(0)
-  } else {
+
+  #if no active factor (and hence, dummies)
+  if (sum(tau) == 0) return(0) else {
+
     ltau <- l[tau] #levels of active factors
     -sum(mylchoose(ltau, delta[tau])) - sum(log(ltau - 1)) #logarithmic scale
+
   }
+
 }
 
 #' Logarithm of the Constant model prior for the dummy level, if factors
@@ -168,6 +181,7 @@ logScottBerger.d <- function(delta, tau, l) {
 #' This prior is derived by assigning an independent Bernouilli distribution with fixed
 #' probability 0.5 to the a priori inclusion probability of each competing
 #' dummy variable and assumming independence between different factors.
+#' Ignores the factors that are not active
 #'
 #' @export
 #' @param tau Logical vector of length L denoting whether or not a factor is active,
@@ -179,8 +193,8 @@ logScottBerger.d <- function(delta, tau, l) {
 #'
 #' @author Carolina Mulet
 #'
-#' @seealso \code{\link[MissingBVS]{missingGibbsBVS.lm}},
-#' \code{\link[MissingBVS]{logScottBerger.d}}.
+#' @seealso \code{\link[meantobvs]{bvs.lm}}, \code{\link[meantobvs]{gibbsbvs.lm}},
+#' \code{\link[meantobvs]{logScottBerger.d}}.
 #'
 #' @examples
 #' tau <- c(FALSE, TRUE, TRUE)
@@ -188,12 +202,15 @@ logScottBerger.d <- function(delta, tau, l) {
 #' logConstant.d(tau = tau, l = levels)
 #'
 logConstant.d <- function(tau, l) {
-  if (sum(tau) == 0) { #no active factor (and hence, dummy)
-    return(0)
-  } else {
+
+  #if no active factor (and hence, dummies)
+  if (sum(tau) == 0) return(0) else {
+
     ltau <- l[tau] #levels of active factors
     -sum(log(2^ltau - 1 - ltau)) #logarithmic scale
+
   }
+
 }
 
 #' Checks that the model prior given by prior.models is implemented and returns
@@ -203,19 +220,22 @@ logConstant.d <- function(tau, l) {
 checkforprior.models <- function (prior.models, priorprobs, p) {
 
   switch (prior.models,
+
           ScottBerger = {prior.models.f <- function(model) logScottBerger(p = p, model)},
           Constant = {prior.models.f <- function(model) logConstant(p = p)},
           User = {
+
             if (is.null(priorprobs)) stop("User prior selected but no prior probabilities provided.\n")
             if (!is.numeric(priorprobs)) stop("User prior selected but no numeric probabilities provided.\n")
             if (any(is.na(priorprobs))) stop("User prior selected but some prior probabilities not provided.\n")
             if (length(priorprobs) != (p + 1)) stop("User prior selected but the length of prior",
-                                                    "probabilities is not correct (", p+1,").\n")
+                                                    " probabilities is not correct (", p+1,").\n")
             if (sum(priorprobs < 0) > 0) stop("Prior probabilities must be positive.\n")
             if (all(priorprobs == 0)) stop("Prior probabilities must be positive.\n")
 
             prior.models.f <- function(model) logUser(p = p, model, priorprobs = priorprobs)
           },
+
           stop("Only priors 'ScottBerger', 'Constant' and 'User' supported.\n"))
 
   return(prior.models.f)
@@ -268,53 +288,19 @@ checkmarg.factorsprior <- function (mF, prior.models.dummies, l, positionscov,
 checkforprior.models.dummies <- function (prior.models.dummies, l) {
 
   switch (prior.models.dummies,
-          ScottBerger = {prior.models.f <-
-            function(delta, tau) logScottBerger.d(delta, tau, l = l)},
-          Constant = {prior.models.f <- function(delta, tau) logConstant.d(tau, l = l)},
+
+          ScottBerger = {
+            prior.models.f <-
+            function(delta, tau) logScottBerger.d(delta, tau, l = l)
+          },
+          Constant = {
+            prior.models.f <-
+              function(delta, tau) logConstant.d(tau, l = l)
+          },
+
           stop("Only priors 'ScottBerger' and 'Constant' supported.\n"))
 
   return(prior.models.f)
 }
 
-## García-Donato and Paulo (2022)'s hierarchical prior:
-#auxiliar function to calculate the number of models with r dummies active
-# lG <- function(r, ltau) {
-#   m2 <- length(ltau) #number of factors active
-#
-#   mat.ind <- matrix(1:ltau[1], nc = 1)
-#   if(m2 > 1) {
-#     for (i in 2:m2) {
-#       mat.ind <- merge(mat.ind, 1:ltau[i], by = NULL)
-#     }
-#   }
-#
-#   ind.r <- which(rowSums(mat.ind) == r)
-#   Gtau.r <- mat.ind[ind.r,]
-#
-#   if (length(ind.r) > 1) {
-#     res <- 0
-#     for (j in 1:dim(Gtau.r)[1]) {
-#       res <- res + exp(sum(mylchoose(ltau + 1, as.numeric(Gtau.r[j,]))))
-#     }
-#   } else res <- exp(sum(mylchoose(ltau + 1, as.numeric(Gtau.r))))
-#   log(res)
-# }
-#
-# #l is a vector of length L with the number of levels for each factor,
-# #where L is the number of factors
-# #delta is a vector of length L with the number of active dummies for each factor
-# #tau is a vector of length L with 1 if the factor is active
-# logScottBerger.d <- function(delta, tau, l) {
-#   if (sum(tau) == 0) {
-#     return(0)
-#   } else {
-#     ltau <- l[tau] #levels of active factors
-#     -lG(sum(delta), ltau - 1) - log(sum(ltau) - 2*sum(tau) + 1) #logarithmic scale
-#   }
-# }
-#
-# logConstant.d <- function(tau, l) {
-#   if (sum(tau) == 0) {
-#     return(0)
-#   } else -sum(l) * log(2) #logaritmic scale of 1 / (2^sum(l))
-# }
+

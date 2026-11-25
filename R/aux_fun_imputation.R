@@ -1,4 +1,4 @@
-#' \pkg{MissingBVS}'s objective Bayesian imputation for multivariate normal covariates
+#' \pkg{meantobvs}'s objective Bayesian imputation for multivariate normal covariates
 #'
 #' Performs the multiple imputation used by García-Donato et al (2025) for
 #' continuous and normally distributed covariates to perform objective Bayesian
@@ -14,7 +14,7 @@
 #' @param time.test Logical to indicate whether to check time of performance with
 #' \code{nMC = 30} or not.
 #'
-#' @return \code{MC.imputation} returns an object of class \code{MissingBVS.imputation}
+#' @return \code{MC.imputation} returns an object of class \code{meantobvs.imputation}
 #' with the following elements:
 #' \item{rX.imput}{Array of dimension nxpx\code{nMC}, where n is the number of
 #' observations and p the number of competing covariates, containing the imputed datasets}
@@ -24,9 +24,9 @@
 #' @author María Eugenia Castellanos
 #' Maintainer: <Carolina.Mulet1@@alu.uclm.es>
 #'
-#' @seealso Use \code{\link[MissingBVS]{lBF.miss}} for computing the logarithm
+#' @seealso Use \code{\link[meantobvs]{lBF.miss}} for computing the logarithm
 #' of the MC approximation of the Bayes factor in linear models.
-#' Use \code{\link[MissingBVS]{missingBVS.lm}} for an exact computation
+#' Use \code{\link[meantobvs]{bvs.lm}} for an exact computation
 #' of the model posterior distribution in the VS problem (recommended when p<20).
 #'
 #' @examples
@@ -105,7 +105,7 @@ MC.imputation <- function(X, nMC = 039E1,
   if (time.test) return(time <- Sys.time() - time)
 
   imputation.list <- list(rX.imput = rX.imput, rSigma = rSigma, rmu = rmu)
-  class(imputation.list) <- "MissingBVS.imputation"
+  class(imputation.list) <- "meantobvs.imputation"
   return(imputation.list)
 }
 #' \pkg{mice}'s imputation for Bayesian Imputation Averaging in variable selection
@@ -149,16 +149,16 @@ MC.imputation <- function(X, nMC = 039E1,
 #' @param time.test Logical to indicate whether to check time of performance with
 #' \code{n.imp = 30} or not.
 #'
-#' @return An object of class \code{MissingBVS.imputation}, an array of dimension
+#' @return An object of class \code{meantobvs.imputation}, an array of dimension
 #' nxpx\code{n.imp}, where n is the number of observations and p the number of
 #' competing covariates given by \code{formula}, containing the imputed datasets.
 #'
 #' @author Carolina Mulet
 #' Maintainer: <Carolina.Mulet1@@alu.uclm.es>
 #'
-#' @seealso Use \code{\link[MissingBVS]{missingBVS.lm}} for an exact computation
+#' @seealso Use \code{\link[meantobvs]{bvs.lm}} for an exact computation
 #' of the model posterior distribution in the VS problem (recommended when p<20)
-#' in linear models and \code{\link[MissingBVS]{missingBVS.glm}} for generalized
+#' in linear models and \code{\link[meantobvs]{bvs.glm}} for generalized
 #' linear models.
 #'
 #' @examples
@@ -224,7 +224,7 @@ mice.imputation <- function(fulldataframe, n.imp = 039E1, imp.predict.mat = mice
   }
 
   #Get final dim of full imputed datasets
-  aux <- model.matrix.rankdef(fulldataframe)
+  aux <- model.rankdef.matrix(fulldataframe)
   q <- ncol(aux)
 
   imputation.array <- array(0, dim = c(nrow(X), q, n.imp), #an array with the matrices imputed
@@ -232,12 +232,13 @@ mice.imputation <- function(fulldataframe, n.imp = 039E1, imp.predict.mat = mice
   for (s in seq_len(n.imp)) {
     aux.imps <- model.frame(formula(delete.response(attr(fulldataframe, "terms"))),
                             imps[[s]], na.action = NULL)
-    imputation.array[, , s] <- model.matrix.rankdef(aux.imps) #build the model matrix
+    imputation.array[, , s] <- model.rankdef.matrix(aux.imps) #build the model matrix
   }
   if (time.test) return(time <- Sys.time() - time)
 
-  class(imputation.array) <- "MissingBVS.imputation"
-  return(list(imputation.array = imputation.array, logEvents = imput$loggedEvents))
+  class(imputation.array) <- "meantobvs.imputation"
+  return(list(imputation.array = imputation.array,
+              logEvents = imput$loggedEvents))
 }
 
 #' @keywords internal
@@ -325,11 +326,17 @@ buildimputation <- function(NAvars, formula, data, imp.predict.mat, n.imp, maxit
   #select the vars in the order X0, X.full and remove oversaturated for X0 if factors
   imputation.array <- imput$imputation.array[obsnotNA, ordvars, , drop = FALSE]
 
-  imp.info <- list(loggedEvents = imput$logEvents, parallelmice = parallelmice,
-                   imp.mice.method = imp.mice.method, imp.predict.mat = imp.predict.mat,
-                   n.imp = n.imp, imp.seed = imp.seed, NAvars = which(NAvars))
+  #save imputation info for user
+  imp.info <- list(loggedEvents = imput$logEvents)
+  imp.info$parallelmice <- parallelmice
+  imp.info$imp.mice.method <- imp.mice.method
+  imp.info$imp.predict.mat <- imp.predict.mat
+  imp.info$n.imp <- n.imp
+  imp.info$imp.seed <- imp.seed
+  imp.info$NAvars <- which(NAvars)
 
-  return(list(imputation.array = imputation.array, imp.info = imp.info))
+  return(list(imputation.array = imputation.array,
+              imp.info = imp.info))
 }
 
 #' @keywords internal
@@ -343,7 +350,7 @@ extimputation <- function (formula, imp.datasets, n0, framefull, ordvars, obsnot
     stop("Imputations should be given as an array or list.\n")
   }
 
-  aux <- model.matrix.rankdef(framefull)
+  aux <- model.rankdef.matrix(framefull)
   if (isarray) {
     #Check that imputations have the correct format
     if (dim(imp.datasets)[1] != n0) stop("Imputations should be given as an (",
@@ -366,7 +373,7 @@ extimputation <- function (formula, imp.datasets, n0, framefull, ordvars, obsnot
 
     for (s in seq_len(n.imp)) {
       aux.imps <- model.frame(X.formula, data.frame(imp.datasets[,,s]), na.action = NULL)
-      imputation.array[,,s] <- model.matrix.rankdef(aux.imps) #build the model matrix
+      imputation.array[,,s] <- model.rankdef.matrix(aux.imps) #build the model matrix
     }
   }
 
@@ -391,7 +398,7 @@ extimputation <- function (formula, imp.datasets, n0, framefull, ordvars, obsnot
 
     for (s in seq_len(n.imp)) {
       aux.imps <- model.frame(X.formula, data.frame(imp.datasets[[s]]), na.action = NULL)
-      imputation.array[,,s] <- model.matrix.rankdef(aux.imps) #build the model matrix
+      imputation.array[,,s] <- model.rankdef.matrix(aux.imps) #build the model matrix
     }
   }
 
@@ -400,7 +407,9 @@ extimputation <- function (formula, imp.datasets, n0, framefull, ordvars, obsnot
 
   imp.info <- list(n.imp = n.imp, NAvars = which(NAvars))
 
-  return(list(imputation.array = imputation.array, imp.info = imp.info, n.imp = n.imp))
+  return(list(imputation.array = imputation.array,
+              imp.info = imp.info,
+              n.imp = n.imp))
 }
 
 #' @keywords internal
@@ -419,7 +428,6 @@ checkformissings <- function (y, X0 = NULL, X.full) {
   ##on the regressors
   O <- 1*(!is.na(X.full))
   #zeros where missing observations on the data without missings on the response
-  # NAvars <- names(which(colSums(O) < dim(X.full)[1])) #columns with missings
   NAvars <- colSums(O) < dim(X.full)[1] #logical: columns with missings or not
 
   return(NAvars)
@@ -468,17 +476,17 @@ checkformissings <- function (y, X0 = NULL, X.full) {
 #   return(mO)
 # }
 
-# plot.MissingBVS.imputation <- function (X, imputation, formula, mfrow = NULL) {
+# plot.meantobvs.imputation <- function (X, imputation, formula, mfrow = NULL) {
 #   #X is a matrix or dataframe with missing data
 #   #imputation.array is the array with the whole imputed data
 #   #formula can either be null or a model formula
 #   formula <- as.formula(formula)
 #
-#   if (inherits(imputation, "MissingBVS.imputation")) {
+#   if (inherits(imputation, "meantobvs.imputation")) {
 #     if (is.list(imputation)) {
 #       imputation.array <- imputation$rX.imput
 #     } else imputation.array <- imputation
-#   } else stop("Only imputation plot available for class MissingBVS.imputation.\n")
+#   } else stop("Only imputation plot available for class meantobvs.imputation.\n")
 #
 #   aux <- model.frame(formula, X, na.action = NULL)[,-1]
 #   #which variables are numerical
