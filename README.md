@@ -57,7 +57,7 @@ The posterior distribution over the model space is given through Bayes' theorem:
 
 $$
 P(M_i \mid \texttt{data}) =
-\frac{P(M_i)\, AvB_i(\texttt{data})}{C},
+\frac{P(M_i)\  AvB_i(\texttt{data})}{C},
 $$
 
 where $AvB_i$ is the Average Bayes factor of $M_i$ to $M_0$ (null model) under missing data, $P(M_i)$ is the prior probability of $M_i$ and $C$ is the normalizing constant.
@@ -83,7 +83,7 @@ definition and its nature has not received so much attention. A naive approach m
 results highly dependent on the specification, usually somehow arbitrary, and changes
 probabilities drastically, due to multiplicity issues (Scott and Berger, 2010). 
 `meantobvs` by default assess factors themselves by averaging over the set of models
-with at least one active dummy variable (García-Donato and Paulo, 2022):
+with at least one active dummy variable (García-Donato and Paulo, 2022).
 
 <br>
 
@@ -93,11 +93,13 @@ with at least one active dummy variable (García-Donato and Paulo, 2022):
 
 <br>
 
+Hence, the posterior becomes
+
 $$
-P(M_i \mid \texttt{data}) = \frac{P(M_i)\, B_i(\texttt{data})}{C},
+P(M_i \mid \texttt{data}) = \frac{P(M_i)\  B_i(\texttt{data})}{C},
 $$
 
-where $B_i(\texttt{data}) = \sum_k P(M_{ik})\, B_k(\texttt{data})$ corresponds to the BF for model $M_i$ to $M_0$
+where $B_i(\texttt{data}) = \sum_k P(M_{ik})\  B_k(\texttt{data})$ corresponds to the BF for model $M_i$ to $M_0$
 if $M_i$ has an active factor and $M_{ik}$ are the submodel space made by the different
 possible active levels of the factor. The methodology computes a posterior over the model space made
 up by the factors, properly accounting for the reference level.
