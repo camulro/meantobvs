@@ -54,6 +54,7 @@ posterior becomes a weighted *mean to the Bayesian variable selection* method.
 <br>
 
 The posterior distribution over the model space is given through Bayes' theorem:
+
 $$
 P(M_i \mid \texttt{data}) =
 \frac{P(M_i)\, AvB_i(\texttt{data})}{C},
@@ -72,6 +73,7 @@ B_i(\texttt{complete data}_{n.imp})
 n.imp
 }.
 $$
+
 where $B_i(\texttt{complete\ data}_j)$ corresponds to the BF for model $M_i$ to $M_0$ under the $j$-th imputed dataset.
 Data-driven BF can be either computed using popular g-prior choices or approximated
 with the BIC (Schwarz, 1978) or the test-based BF (Held, Gravestock and Sabanés, 2015).
@@ -92,8 +94,9 @@ with at least one active dummy variable (García-Donato and Paulo, 2022):
 <br>
 
 $$
-P(M_i \mid {\tt{data}}) = \frac{P(M_i)\, B_i(\texttt{data})}{C},
+P(M_i \mid \texttt{data}) = \frac{P(M_i)\, B_i(\texttt{data})}{C},
 $$
+
 where $B_i(\texttt{data}) = \sum_k P(M_{ik})\, B_k(\texttt{data})$ corresponds to the BF for model $M_i$ to $M_0$
 if $M_i$ has an active factor and $M_{ik}$ are the submodel space made by the different
 possible active levels of the factor. The methodology computes a posterior over the model space made
