@@ -57,11 +57,11 @@ pdftools::pdf_convert(
   pdf = path,
   format = "png",
   dpi = 500,
-  filenames = file.path("./man/images/R logo", "Rlogo_bounded.png"),
+  filenames = file.path("./man/images/R logo", "Rlogo.png"),
   pages = 1
 )
 
-setwd("./inst/R logo")
+setwd("./man/R logo")
 
 install.packages("qrcode")
 library(qrcode)
@@ -109,7 +109,7 @@ qr_final <- image_composite(
 )
 
 # Guardar resultado
-image_write(qr_final, "man/images/qrlogoR.png", format = "png")
+image_write(qr_final, "qrlogoR.png", format = "png")
 
 
 

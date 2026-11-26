@@ -11,13 +11,13 @@
 `meantobvs` is an R package that implements Bayesian Variable Selection 
 based on Bayes factors while incorporates other sources of uncertainty to the model
 choice problem, such as missing data and factors. It includes hypothesis testing, model selection and
-#' model averaging for either linear and generalized linear models.
+model averaging for either linear and generalized linear models.
 
 The software is *meant to be the variable selection* solution for a broad range of 
 problems. It applies to both linear and generalized linear models, through an 
 intuitive interface, similar to the well-known `lm` and `glm` functions. 
 The flexible implementation allows the advanced user to customize priors from a set 
-of popular choices (Bayarri et al, 2012; Li and Clyde, 2018). Fast approximations such 
+of popular choices (Bayarri *et al.*, 2012; Li and Clyde, 2018). Fast approximations such 
 as the BIC (Schwarz, 1978) and TBF (Held, Sabanés and Gravestock, 2015) are also
 available. Default choices are fully automatic and 
 *meant for objective Bayesian variable selection*, while accounting 
@@ -29,14 +29,18 @@ and heuristic sampling methods to solve large complex problems.
 
 ## Methodology
 
-BVS
+Variable selection can be formulated as a comparison of competing hypotheses/models, 
+evaluated under the **Bayesian** framework according to their posterior evidence 
+in a parsimonious way. Each competing model is defined by its subset of active 
+variables and its posterior probability depends on the prior assignment: over 
+the model space and the model-specific parameters.
 
 **When missingness occurs**, standard variable selection methods cannot be applied,
 while multiple imputation procedures depend on the variables included, leading to 
 a catch-22 situation. As other statistical areas, variable selection is not free
 from the bias consequence of the missing mechanism.
 In order to account for both sources of uncertainty, 
-García-Donato et al. (2025) integrate missing data into the marginal likelihood. 
+García-Donato *et al.* (2025) integrate missing data into the marginal likelihood. 
 `meantobvs` implements this methodology in linear and generalized linear models 
 via an average over the marginal of several imputed datasets. Thereby the derived model 
 posterior becomes a weighted *mean to the Bayesian variable selection* method. 
@@ -51,15 +55,24 @@ posterior becomes a weighted *mean to the Bayesian variable selection* method.
 
 The posterior distribution over the model space is given through Bayes' theorem:
 $$
-P(M_i | {\tt{data}}) = P(M_i)\ AvB_i({\tt{data}})\ /\ C,
+P(M_i \mid \texttt{data}) =
+\frac{P(M_i)\, AvB_i(\texttt{data})}{C},
 $$
-where $AvB_i$ is the Average Bayes factor of $M_i$ to $M_0$ (null model) under missing data,
-$P(M_i)$ is the prior probability of $M_i$ and $C$ is the normalizing constant.
+
+where $AvB_i$ is the Average Bayes factor of $M_i$ to $M_0$ (null model) under missing data, $P(M_i)$ is the prior probability of $M_i$ and $C$ is the normalizing constant.
+
 $AvB_i$ is defined as the average of the corresponding data-driven standard BFs:
+
 $$
-AvB_i = [\ B_i({\tt{complete\ data}}_1)\ +\ ...\ +\ B_i({\tt{complete\ data}}_{\tt {n.imp}})\ ]\ /\ {\tt {n.imp}},
+AvB_i =
+\frac{
+B_i(\texttt{complete data}_1) + \cdots +
+B_i(\texttt{complete data}_{n.imp})
+}{
+n.imp
+}.
 $$
-where $B_i({\tt{complete\ data}}_j)$ corresponds to the BF for model $M_i$ to $M_0$ under the $j$-th imputed dataset.
+where $B_i(\texttt{complete\ data}_j)$ corresponds to the BF for model $M_i$ to $M_0$ under the $j$-th imputed dataset.
 Data-driven BF can be either computed using popular g-prior choices or approximated
 with the BIC (Schwarz, 1978) or the test-based BF (Held, Gravestock and Sabanés, 2015).
 
@@ -79,9 +92,9 @@ with at least one active dummy variable (García-Donato and Paulo, 2022):
 <br>
 
 $$
-P(M_i | {\tt{data}}) = P(M_i)\ B_i({\tt{data}})\ /\ C,
+P(M_i \mid {\tt{data}}) = \frac{P(M_i)\, B_i(\texttt{data})}{C},
 $$
-where $B_i({\tt{data}}) = \sum_k P(M_{ik})\ B_k({\tt{data}})$ corresponds to the BF for model $M_i$ to $M_0$
+where $B_i(\texttt{data}) = \sum_k P(M_{ik})\, B_k(\texttt{data})$ corresponds to the BF for model $M_i$ to $M_0$
 if $M_i$ has an active factor and $M_{ik}$ are the submodel space made by the different
 possible active levels of the factor. The methodology computes a posterior over the model space made
 up by the factors, properly accounting for the reference level.
@@ -135,7 +148,7 @@ From those 1 is fixed (the intercept) and we should select from the remaining 3
 The problem has a total of 8 competing models.
 Of these, the  8 most probable (a posteriori) are kept.
 
-[====================] 100% [Elapsed time: 00:00:00 | Estim. time: 00:00:00 | ≈ 967 models/s]
+[====================] 100% [Elapsed time: 00:00:00 \mid Estim. time: 00:00:00 \mid ≈ 967 models/s]
 ```
 
 ```R
